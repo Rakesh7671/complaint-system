@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Submit Complaint – GrievEase</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-brand">
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+            <div class="nav-brand-logo">🎓</div>
+            <span class="nav-brand-name">GrievEase</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <a href="/student-dashboard.html" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i>
+                Dashboard</a>
+            <button class="btn btn-secondary btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-chip">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebarUserName">Student</div>
+                        <div class="user-role" id="sidebarUserRole">student</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Student Portal</div>
+                <a href="/student-dashboard.html" class="sidebar-link"><i class="fas fa-tachometer-alt"></i>
+                    Dashboard</a>
+                <a href="/submit-complaint.html" class="sidebar-link active"><i class="fas fa-plus-circle"></i> New
+                    Complaint</a>
+            </nav>
+            <div class="sidebar-footer"><button class="btn btn-secondary btn-full btn-sm" onclick="logout()"><i
+                        class="fas fa-sign-out-alt"></i> Sign Out</button></div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Submit a Complaint</h1>
+                <p class="page-subtitle">Describe your issue — our AI will instantly classify and route it to the right
+                    department</p>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 380px;gap:var(--space-xl);align-items:start;">
+                <!-- Form -->
+                <div class="card">
+                    <form id="complaintForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label class="form-label" for="title">Complaint Title <span
+                                    class="required">*</span></label>
+                            <input type="text" id="title" class="form-input"
+                                placeholder="Brief title of your complaint (e.g., No water supply in Block C)" required
+                                maxlength="200" oninput="triggerAI()" />
+                            <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;" id="titleCount">
+                                0/200</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="description">Detailed Description <span
+                                    class="required">*</span></label>
+                            <textarea id="description" class="form-textarea"
+                                placeholder="Provide a detailed description of your complaint. Include when the issue started, how it's affecting you, and any steps already taken..."
+                                required minlength="20" maxlength="2000" rows="6" oninput="triggerAI()"></textarea>
+                            <div style="font-size:0.75rem;color:var(--text-muted);text-align:right;" id="descCount">
+                                0/2000</div>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                            <div class="form-group">
+                                <label class="form-label" for="category">Category <span
+                                        class="required">*</span></label>
+                                <select id="category" class="form-select" required>
+                                    <option value="">— Select or let AI decide —</option>
+                                    <option value="Academics">📚 Academics</option>
+                                    <option value="Hostel">🏠 Hostel</option>
+                                    <option value="Transport">🚌 Transport</option>
+                                    <option value="Infrastructure">🏗️ Infrastructure</option>
+                                    <option value="Faculty">👨‍🏫 Faculty</option>
+                                    <option value="Exams">📝 Exams</option>
+                                    <option value="Others">📌 Others</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="priority">Priority Override <span
+                                        style="font-size:0.7rem;color:var(--text-muted);">(optional)</span></label>
+                                <select id="priority" class="form-select">
+                                    <option value="">— Let AI decide —</option>
+                                    <option value="High">🔴 High</option>
+                                    <option value="Medium">🟡 Medium</option>
+                                    <option value="Low">🟢 Low</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="form-group">
+                            <label class="form-label">Image Proof <span
+                                    style="font-size:0.7rem;color:var(--text-muted);">(optional, max 5MB)</span></label>
+                            <div class="file-drop-zone" id="dropZone"
+                                onclick="document.getElementById('imageInput').click()">
+                                <div class="file-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                                <p style="font-size:0.875rem;font-weight:500;color:var(--text-secondary);">Click to
+                                    upload or drag & drop</p>
+                                <p style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">JPG, PNG, GIF, WebP
+                                </p>
+                            </div>
+                            <input type="file" id="imageInput" name="image" accept="image/*" style="display:none;"
+                                onchange="previewImage(this)" />
+                            <div class="file-preview" id="filePreview" style="display:none;">
+                                <div style="display:flex;align-items:center;gap:8px;margin-top:8px;">
+                                    <img id="previewImg" src="" alt="Preview"
+                                        style="max-height:120px;border-radius:8px;" />
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="clearImage()"><i
+                                            class="fas fa-times"></i> Remove</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="submitError" class="form-error hidden" style="margin-bottom:12px;"><i
+                                class="fas fa-exclamation-circle"></i> <span id="submitErrorMsg"></span></div>
+
+                        <div style="display:flex;gap:12px;">
+                            <button type="submit" id="submitBtn" class="btn btn-primary btn-lg" style="flex:1;">
+                                <i class="fas fa-paper-plane"></i> Submit Complaint
+                            </button>
+                            <a href="/student-dashboard.html" class="btn btn-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- AI Analysis Panel -->
+                <div>
+                    <div class="ai-panel">
+                        <div class="ai-panel-header">
+                            <i class="fas fa-robot" style="color:var(--primary-light);"></i>
+                            <span class="ai-panel-title">Live AI Analysis</span>
+                            <span class="ai-badge">LIVE</span>
+                        </div>
+                        <div id="aiStatus"
+                            style="display:flex;align-items:center;gap:8px;color:var(--text-muted);font-size:0.8125rem;margin-bottom:12px;">
+                            <i class="fas fa-keyboard"></i> Start typing to see AI insights...
+                        </div>
+                        <div class="ai-insights" id="aiInsights" style="display:none;">
+                            <div class="ai-insight">
+                                <div class="ai-insight-label">Category</div>
+                                <div class="ai-insight-value" id="aiCategory">—</div>
+                            </div>
+                            <div class="ai-insight">
+                                <div class="ai-insight-label">Priority</div>
+                                <div class="ai-insight-value" id="aiPriority">—</div>
+                            </div>
+                            <div class="ai-insight">
+                                <div class="ai-insight-label">Sentiment</div>
+                                <div class="ai-insight-value" id="aiSentiment">—</div>
+                            </div>
+                            <div class="ai-insight">
+                                <div class="ai-insight-label">Department</div>
+                                <div class="ai-insight-value" id="aiDept" style="font-size:0.8125rem;">—</div>
+                            </div>
+                        </div>
+                        <div id="aiConfidenceWrap" style="display:none;margin-top:12px;">
+                            <div
+                                style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">
+                                <span>AI Confidence</span><span id="aiConfidenceVal">—</span>
+                            </div>
+                            <div class="progress-bar-wrapper">
+                                <div class="progress-bar" id="aiConfidenceBar" style="width:0%;"></div>
+                            </div>
+                        </div>
+                        <div id="aiAutoAssign"
+                            style="display:none;margin-top:12px;background:rgba(16,185,129,0.1);border-radius:8px;padding:10px;font-size:0.8rem;color:#34d399;display:flex;align-items:center;gap:8px;">
+                            <i class="fas fa-check-circle"></i> <span id="aiAutoAssignText">Auto-assigned</span>
+                        </div>
+                    </div>
+
+                    <!-- Quick tips -->
+                    <div class="card" style="margin-top:16px;">
+                        <h4 style="margin-bottom:12px;font-size:0.875rem;"><i class="fas fa-lightbulb"
+                                style="color:var(--accent);"></i> Tips for a Better Response</h4>
+                        <ul style="font-size:0.8125rem;color:var(--text-secondary);line-height:1.8;padding-left:16px;">
+                            <li>Be specific about the issue location and timing</li>
+                            <li>Mention how long the issue has existed</li>
+                            <li>Describe the impact on you and others</li>
+                            <li>Attach image proof when available</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/utils.js"></script>
+    <script>
+        let aiDebounceTimer;
+        let lastAiResult = null;
+
+        function init() {
+            const user = requireAuth(['student']);
+            if (!user) return;
+            initSidebar();
+            setupDragDrop();
+        }
+
+        function setupDragDrop() {
+            const dropZone = document.getElementById('dropZone');
+            dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+            dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault(); dropZone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    document.getElementById('imageInput').files = e.dataTransfer.files;
+                    previewImage({ files: [file] });
+                }
+            });
+        }
+
+        // Live character counters
+        document.getElementById('title').addEventListener('input', function () {
+            document.getElementById('titleCount').textContent = `${this.value.length}/200`;
+        });
+        document.getElementById('description').addEventListener('input', function () {
+            document.getElementById('descCount').textContent = `${this.value.length}/2000`;
+        });
+
+        function triggerAI() {
+            clearTimeout(aiDebounceTimer);
+            const title = document.getElementById('title').value;
+            const desc = document.getElementById('description').value;
+            if (title.length < 3 && desc.length < 5) return;
+            document.getElementById('aiStatus').innerHTML = '<div class="ai-spinner"></div> Analyzing...';
+            document.getElementById('aiInsights').style.display = 'none';
+            document.getElementById('aiConfidenceWrap').style.display = 'none';
+            document.getElementById('aiAutoAssign').style.display = 'none';
+            aiDebounceTimer = setTimeout(() => runAI(title, desc), 800);
+        }
+
+        async function runAI(title, description) {
+            try {
+                const result = await apiPost('/api/ai/analyze', { title, description });
+                lastAiResult = result;
+                document.getElementById('aiStatus').style.display = 'none';
+                document.getElementById('aiInsights').style.display = 'grid';
+                document.getElementById('aiConfidenceWrap').style.display = 'block';
+                document.getElementById('aiAutoAssign').style.display = 'flex';
+
+                const priorityColors = { High: '#f87171', Medium: '#fbbf24', Low: '#34d399' };
+                const priorityIcons = { High: '🔴', Medium: '🟡', Low: '🟢' };
+                document.getElementById('aiCategory').textContent = result.category;
+                document.getElementById('aiPriority').innerHTML = `<span style="color:${priorityColors[result.priority]}">${priorityIcons[result.priority]} ${result.priority}</span>`;
+                document.getElementById('aiSentiment').textContent = `${result.sentiment.emoji} ${result.sentiment.label}`;
+                document.getElementById('aiDept').textContent = result.assignedDept;
+                const conf = Math.round(result.confidence * 100);
+                document.getElementById('aiConfidenceVal').textContent = `${conf}%`;
+                document.getElementById('aiConfidenceBar').style.width = `${conf}%`;
+                document.getElementById('aiAutoAssignText').textContent = `Will be assigned to ${result.assignedDept}`;
+
+                // Auto-fill category if not manually selected
+                const catSelect = document.getElementById('category');
+                if (!catSelect.value) catSelect.value = result.category;
+                // Auto-fill priority if not manually selected
+                const priSelect = document.getElementById('priority');
+                if (!priSelect.value) priSelect.value = result.priority;
+            } catch {
+                document.getElementById('aiStatus').innerHTML = '<i class="fas fa-exclamation-triangle" style="color:var(--warning);"></i> AI analysis unavailable';
+            }
+        }
+
+        function previewImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('filePreview').style.display = 'block';
+                document.querySelector('.file-drop-zone').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function clearImage() {
+            document.getElementById('imageInput').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+            document.querySelector('.file-drop-zone').style.display = 'block';
+        }
+
+        document.getElementById('complaintForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const errDiv = document.getElementById('submitError');
+            const errMsg = document.getElementById('submitErrorMsg');
+            errDiv.classList.add('hidden');
+
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+            let category = document.getElementById('category').value;
+            let priority = document.getElementById('priority').value;
+
+            if (!title || !description) {
+                errMsg.textContent = 'Title and description are required.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+            if (description.length < 20) {
+                errMsg.textContent = 'Description must be at least 20 characters.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+
+            try {
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('description', description);
+
+                // Use AI results if available
+                if (lastAiResult) {
+                    formData.append('category', category || lastAiResult.category);
+                    formData.append('priority', priority || lastAiResult.priority);
+                    formData.append('sentiment_label', lastAiResult.sentiment.label);
+                    formData.append('sentiment_score', lastAiResult.sentiment.score);
+                    formData.append('assigned_dept', lastAiResult.assignedDept);
+                    formData.append('ai_confidence', lastAiResult.confidence);
+                    formData.append('ai_tags', lastAiResult.tags || '');
+                } else {
+                    if (category) formData.append('category', category);
+                    if (priority) formData.append('priority', priority);
+                }
+
+                const imageFile = document.getElementById('imageInput').files[0];
+                if (imageFile) formData.append('image', imageFile);
+
+                const data = await apiPostForm('/api/complaints', formData);
+                showToast('Complaint submitted successfully! 🎉', 'success');
+                setTimeout(() => window.location.href = '/student-dashboard.html', 1200);
+            } catch (err) {
+                errMsg.textContent = err.message || 'Failed to submit complaint.';
+                errDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Complaint';
+            }
+        });
+
+        init();
+    </script>
+</body>
+
+</html>

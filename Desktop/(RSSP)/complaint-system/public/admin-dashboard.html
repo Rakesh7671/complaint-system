@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard – GrievEase</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-brand">
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+            <div class="nav-brand-logo">🎓</div>
+            <span class="nav-brand-name">GrievEase <span
+                    style="font-size:0.7rem;background:rgba(6,182,212,0.15);color:#67e8f9;border:1px solid rgba(6,182,212,0.3);border-radius:4px;padding:2px 6px;vertical-align:middle;"
+                    id="roleLabel">Admin</span></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div class="notif-btn" style="position:relative;">
+                <button class="btn btn-secondary btn-sm" id="notifBtn" onclick="toggleNotifPanel()"
+                    aria-label="Notifications">
+                    <i class="fas fa-bell"></i>
+                    <span id="notifCount"
+                        style="display:none;position:absolute;top:-4px;right:-4px;background:var(--danger);color:white;font-size:0.65rem;font-weight:700;width:18px;height:18px;border-radius:50%;align-items:center;justify-content:center;"></span>
+                </button>
+                <div class="notif-panel hidden" id="notifPanel">
+                    <div class="notif-header"><span
+                            style="font-weight:600;font-size:0.9rem;">Notifications</span><button
+                            onclick="markAllNotifRead()" class="btn btn-sm"
+                            style="font-size:0.75rem;padding:4px 10px;background:transparent;color:var(--primary-light);">Mark
+                            all read</button></div>
+                    <div class="notif-list" id="notifList"></div>
+                </div>
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i>
+                Logout</button>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-chip">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebarUserName">Admin</div>
+                        <div class="user-role" id="sidebarUserRole">admin</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Admin Portal</div>
+                <a href="#" class="sidebar-link active" onclick="showSection('complaints')"><i class="fas fa-list"></i>
+                    All Complaints</a>
+                <a href="#" class="sidebar-link" onclick="showSection('analytics')"><i class="fas fa-chart-pie"></i>
+                    Analytics</a>
+                <a href="#" class="sidebar-link" onclick="showSection('dept')"><i class="fas fa-building"></i> Dept
+                    Performance</a>
+                <div class="sidebar-section-title" style="margin-top:16px;">Filters</div>
+                <a href="#" class="sidebar-link" onclick="applyQuickFilter('priority','High')"><i class="fas fa-fire"
+                        style="color:#f87171;"></i> High Priority</a>
+                <a href="#" class="sidebar-link" onclick="applyQuickFilter('status','Pending')"><i class="fas fa-clock"
+                        style="color:#fbbf24;"></i> Pending</a>
+                <a href="#" class="sidebar-link" onclick="applyQuickFilter('status','In Progress')"><i
+                        class="fas fa-spinner" style="color:#60a5fa;"></i> In Progress</a>
+            </nav>
+            <div class="sidebar-footer"><button class="btn btn-secondary btn-full btn-sm" onclick="logout()"><i
+                        class="fas fa-sign-out-alt"></i> Sign Out</button></div>
+        </aside>
+
+        <main class="main-content">
+            <!-- === COMPLAINTS SECTION === -->
+            <div id="sectionComplaints">
+                <div class="page-header flex-between" style="flex-wrap:wrap;gap:16px;margin-bottom:20px;">
+                    <div>
+                        <h1 class="page-title">Complaint Management</h1>
+                        <p class="page-subtitle" id="adminSubtitle">All complaints across departments</p>
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-grid" style="margin-bottom:20px;">
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue"><i class="fas fa-list-ul"></i></div>
+                        <div>
+                            <div class="stat-value" id="sTotal">–</div>
+                            <div class="stat-label">Total</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-yellow"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="stat-value" id="sPending">–</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-blue"><i class="fas fa-spinner"></i></div>
+                        <div>
+                            <div class="stat-value" id="sProgress">–</div>
+                            <div class="stat-label">In Progress</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-green"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="stat-value" id="sResolved">–</div>
+                            <div class="stat-label">Resolved</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-red"><i class="fas fa-fire"></i></div>
+                        <div>
+                            <div class="stat-value" id="sHigh">–</div>
+                            <div class="stat-label">High Priority</div>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon stat-icon-cyan"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="stat-value" id="sAvgTime">–</div>
+                            <div class="stat-label">Avg Resolution (h)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filters + Table -->
+                <div class="table-container">
+                    <div class="table-header" style="flex-wrap:wrap;gap:8px;">
+                        <span class="table-title">Complaints</span>
+                        <div class="table-filters">
+                            <div class="search-wrapper">
+                                <i class="fas fa-search"></i>
+                                <input type="text" class="search-input" id="adminSearch" placeholder="Search..."
+                                    oninput="filterAdminComplaints()" />
+                            </div>
+                            <select class="filter-select" id="filterStatus" onchange="filterAdminComplaints()">
+                                <option value="">All Status</option>
+                                <option>Pending</option>
+                                <option>In Progress</option>
+                                <option>Resolved</option>
+                            </select>
+                            <select class="filter-select" id="filterCategory" onchange="filterAdminComplaints()">
+                                <option value="">All Categories</option>
+                                <option>Academics</option>
+                                <option>Hostel</option>
+                                <option>Transport</option>
+                                <option>Infrastructure</option>
+                                <option>Faculty</option>
+                                <option>Exams</option>
+                                <option>Others</option>
+                            </select>
+                            <select class="filter-select" id="filterPriority" onchange="filterAdminComplaints()">
+                                <option value="">All Priority</option>
+                                <option>High</option>
+                                <option>Medium</option>
+                                <option>Low</option>
+                            </select>
+                            <button class="btn btn-secondary btn-sm" onclick="clearFilters()"><i
+                                    class="fas fa-times"></i> Clear</button>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Student</th>
+                                    <th>Category</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Sentiment</th>
+                                    <th>Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminTableBody">
+                                <tr>
+                                    <td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">
+                                        Loading...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === ANALYTICS SECTION === -->
+            <div id="sectionAnalytics" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Analytics & Insights</h1>
+                    <p class="page-subtitle">Statistical overview of all complaints</p>
+                </div>
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-card-title"><i class="fas fa-chart-donut"></i> By Category</div>
+                        <div class="chart-wrapper"><canvas id="categoryChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-title"><i class="fas fa-chart-pie"></i> By Status</div>
+                        <div class="chart-wrapper"><canvas id="statusChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-title"><i class="fas fa-chart-bar"></i> By Priority</div>
+                        <div class="chart-wrapper"><canvas id="priorityChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-card-title"><i class="fas fa-chart-line"></i> Monthly Trends</div>
+                        <div class="chart-wrapper"><canvas id="trendChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- === DEPARTMENT SECTION === -->
+            <div id="sectionDept" style="display:none;">
+                <div class="page-header">
+                    <h1 class="page-title">Department Performance</h1>
+                    <p class="page-subtitle">Resolution metrics by department</p>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Total</th>
+                                <th>Resolved</th>
+                                <th>In Progress</th>
+                                <th>Pending</th>
+                                <th>High Priority</th>
+                                <th>Res. Rate</th>
+                                <th>Avg Time (h)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deptTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">
+                                    Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/utils.js"></script>
+    <script>
+        let allComplaints = [];
+        let analyticsData = null;
+        let chartsInitialized = false;
+
+        async function init() {
+            const user = requireAuth(['dept_admin', 'super_admin']);
+            if (!user) return;
+            initSidebar();
+            document.getElementById('roleLabel').textContent = user.role === 'super_admin' ? 'Super Admin' : 'Dept Admin';
+            if (user.department) document.getElementById('adminSubtitle').textContent = `Complaints for: ${user.department}`;
+            await Promise.all([loadComplaints(), loadStats(), loadNotifications()]);
+        }
+
+        function showSection(section) {
+            ['complaints', 'analytics', 'dept'].forEach(s => {
+                document.getElementById(`section${s.charAt(0).toUpperCase() + s.slice(1)}`).style.display = 'none';
+            });
+            document.getElementById(`section${section.charAt(0).toUpperCase() + section.slice(1)}`).style.display = 'block';
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            if (section === 'analytics' && !chartsInitialized) { loadAnalytics(); chartsInitialized = true; }
+            if (section === 'dept') loadDeptPerf();
+        }
+
+        async function loadStats() {
+            try {
+                const data = await apiGet('/api/analytics/overview');
+                analyticsData = data;
+                document.getElementById('sTotal').textContent = data.total;
+                const pending = data.byStatus.find(s => s.status === 'Pending')?.count || 0;
+                const progress = data.byStatus.find(s => s.status === 'In Progress')?.count || 0;
+                const resolved = data.byStatus.find(s => s.status === 'Resolved')?.count || 0;
+                const high = data.byPriority.find(p => p.priority === 'High')?.count || 0;
+                document.getElementById('sPending').textContent = pending;
+                document.getElementById('sProgress').textContent = progress;
+                document.getElementById('sResolved').textContent = resolved;
+                document.getElementById('sHigh').textContent = high;
+                document.getElementById('sAvgTime').textContent = data.avgResolutionHours || '—';
+            } catch { }
+        }
+
+        async function loadComplaints() {
+            try {
+                const data = await apiGet('/api/complaints?limit=100');
+                allComplaints = data.complaints || [];
+                renderTable(allComplaints);
+            } catch (err) {
+                document.getElementById('adminTableBody').innerHTML = `<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--danger);">${err.message}</td></tr>`;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+        }
+
+        function renderTable(complaints) {
+            const tbody = document.getElementById('adminTableBody');
+            if (!complaints.length) {
+                tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted);">No complaints found</td></tr>';
+                return;
+            }
+            const sentimentEmoji = { 'Very Negative': '😡', 'Negative': '😞', 'Neutral': '😐', 'Positive': '🙂', 'Very Positive': '😊' };
+            tbody.innerHTML = complaints.map(c => `
+        <tr onclick="window.location.href='/complaint-detail.html?id=${c.id}'" style="cursor:pointer;">
+          <td style="font-weight:600;color:var(--primary-light);">#${c.id}</td>
+          <td style="max-width:200px;"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;" title="${escapeHtml(c.title)}">${escapeHtml(c.title)}</div></td>
+          <td><div style="font-size:0.8125rem;">${escapeHtml(c.student_name)}</div><div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(c.college_id || '')}</div></td>
+          <td><span class="badge badge-admin">${c.category}</span></td>
+          <td>${priorityBadge(c.priority)}</td>
+          <td>${statusBadge(c.status)}</td>
+          <td><span title="${c.sentiment_label}">${sentimentEmoji[c.sentiment_label] || '😐'} ${c.sentiment_label || 'Neutral'}</span></td>
+          <td style="font-size:0.8125rem;color:var(--text-muted);">${timeAgo(c.created_at)}</td>
+          <td onclick="event.stopPropagation()">
+            <select class="filter-select" style="padding:4px 8px;font-size:0.75rem;" onchange="quickUpdateStatus(${c.id}, this.value)">
+              <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
+              <option ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+              <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+            </select>
+          </td>
+        </tr>
+      `).join('');
+        }
+
+        async function quickUpdateStatus(id, status) {
+            try {
+                await apiPatch(`/api/complaints/${id}/status`, { status });
+                showToast('Status updated', 'success');
+                const c = allComplaints.find(x => x.id === id);
+                if (c) c.status = status;
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        function filterAdminComplaints() {
+            const search = document.getElementById('adminSearch').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            const cat = document.getElementById('filterCategory').value;
+            const pri = document.getElementById('filterPriority').value;
+            let filtered = allComplaints;
+            if (status) filtered = filtered.filter(c => c.status === status);
+            if (cat) filtered = filtered.filter(c => c.category === cat);
+            if (pri) filtered = filtered.filter(c => c.priority === pri);
+            if (search) filtered = filtered.filter(c => c.title.toLowerCase().includes(search) || c.student_name?.toLowerCase().includes(search) || c.description?.toLowerCase().includes(search));
+            renderTable(filtered);
+        }
+
+        function applyQuickFilter(type, value) {
+            if (type === 'status') { document.getElementById('filterStatus').value = value; }
+            if (type === 'priority') { document.getElementById('filterPriority').value = value; }
+            showSection('complaints');
+            filterAdminComplaints();
+        }
+
+        function clearFilters() {
+            document.getElementById('adminSearch').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterCategory').value = '';
+            document.getElementById('filterPriority').value = '';
+            renderTable(allComplaints);
+        }
+
+        async function loadAnalytics() {
+            try {
+                const [overview, trends] = await Promise.all([apiGet('/api/analytics/overview'), apiGet('/api/analytics/trends')]);
+                const chartOpts = {
+                    plugins: { legend: { labels: { color: '#9090b8', boxWidth: 12, font: { size: 11 } } } }
+                };
+                const colors = ['#6366f1', '#06b6d4', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899'];
+
+                // Category Donut
+                const catData = overview.byCategory;
+                new Chart(document.getElementById('categoryChart'), {
+                    type: 'doughnut',
+                    data: { labels: catData.map(d => d.category), datasets: [{ data: catData.map(d => d.count), backgroundColor: colors, borderColor: '#161627', borderWidth: 2 }] },
+                    options: { ...chartOpts, cutout: '65%', responsive: true, maintainAspectRatio: false }
+                });
+
+                // Status Pie
+                const statData = overview.byStatus;
+                new Chart(document.getElementById('statusChart'), {
+                    type: 'pie',
+                    data: { labels: statData.map(d => d.status), datasets: [{ data: statData.map(d => d.count), backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'], borderColor: '#161627', borderWidth: 2 }] },
+                    options: { ...chartOpts, responsive: true, maintainAspectRatio: false }
+                });
+
+                // Priority Bar
+                const priData = overview.byPriority;
+                new Chart(document.getElementById('priorityChart'), {
+                    type: 'bar',
+                    data: { labels: priData.map(d => d.priority), datasets: [{ label: 'Complaints', data: priData.map(d => d.count), backgroundColor: ['#ef4444', '#f59e0b', '#10b981'], borderRadius: 8, borderSkipped: false }] },
+                    options: { ...chartOpts, responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#9090b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#9090b8' }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true } } }
+                });
+
+                // Trend Line
+                const trendData = trends.monthlyTrends;
+                new Chart(document.getElementById('trendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: trendData.map(d => d.month),
+                        datasets: [
+                            { label: 'Total', data: trendData.map(d => d.total), borderColor: '#6366f1', backgroundColor: 'rgba(99,102,241,0.1)', fill: true, tension: 0.4 },
+                            { label: 'Resolved', data: trendData.map(d => d.resolved), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.4 }
+                        ]
+                    },
+                    options: { ...chartOpts, responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: '#9090b8' }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#9090b8' }, grid: { color: 'rgba(255,255,255,0.04)' }, beginAtZero: true } } }
+                });
+            } catch (err) { console.error('Analytics error:', err); }
+        }
+
+        async function loadDeptPerf() {
+            try {
+                const data = await apiGet('/api/analytics/department');
+                const tbody = document.getElementById('deptTableBody');
+                if (!data.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">No data available</td></tr>'; return; }
+                tbody.innerHTML = data.map(d => `
+          <tr>
+            <td style="font-weight:600;">${d.department}</td>
+            <td>${d.total}</td>
+            <td style="color:var(--success);">${d.resolved}</td>
+            <td style="color:var(--info);">${d.in_progress}</td>
+            <td style="color:var(--warning);">${d.pending}</td>
+            <td style="color:var(--danger);">${d.high_priority}</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="progress-bar-wrapper" style="flex:1;"><div class="progress-bar" style="width:${d.resolutionRate}%;"></div></div>
+                <span style="font-size:0.8125rem;font-weight:600;min-width:38px;">${d.resolutionRate}%</span>
+              </div>
+            </td>
+            <td>${d.avg_resolution_hours != null ? d.avg_resolution_hours + 'h' : '—'}</td>
+          </tr>
+        `).join('');
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

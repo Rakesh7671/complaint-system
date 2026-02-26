@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register – GrievEase</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+    <div class="auth-page">
+        <div class="auth-container" style="max-width:980px;">
+            <!-- Hero -->
+            <div class="auth-hero">
+                <div class="auth-hero-icon">✨</div>
+                <h2>Join GrievEase</h2>
+                <p>Register with your college details to start submitting and tracking your complaints efficiently.</p>
+                <div class="auth-hero-features">
+                    <div class="auth-hero-feature"><i class="fas fa-clock"></i> Submit complaints 24/7</div>
+                    <div class="auth-hero-feature"><i class="fas fa-robot"></i> AI processes your complaint instantly
+                    </div>
+                    <div class="auth-hero-feature"><i class="fas fa-eye"></i> Full transparent tracking</div>
+                    <div class="auth-hero-feature"><i class="fas fa-star"></i> Rate resolution quality</div>
+                </div>
+            </div>
+            <!-- Form -->
+            <div class="auth-form-section">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:20px;">
+                    <div class="nav-brand-logo">🎓</div>
+                    <span class="nav-brand-name">GrievEase</span>
+                </div>
+                <h1 class="auth-form-title">Create Account</h1>
+                <p class="auth-form-subtitle">Fill in your details to get started</p>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label class="form-label" for="name">Full Name <span class="required">*</span></label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="name" class="form-input input-with-icon" placeholder="Your full name"
+                                required autocomplete="name" />
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div class="form-group">
+                            <label class="form-label" for="college_id">College ID <span
+                                    class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-id-card input-icon"></i>
+                                <input type="text" id="college_id" class="form-input input-with-icon"
+                                    placeholder="e.g. STU2024001" required autocomplete="off" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="reg_email">Email <span class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-envelope input-icon"></i>
+                                <input type="email" id="reg_email" class="form-input input-with-icon"
+                                    placeholder="you@student.edu" required autocomplete="email" />
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                        <div class="form-group">
+                            <label class="form-label" for="reg_password">Password <span
+                                    class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="reg_password" class="form-input input-with-icon"
+                                    placeholder="Min 6 characters" required autocomplete="new-password" />
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="confirm_password">Confirm Password <span
+                                    class="required">*</span></label>
+                            <div class="input-wrapper">
+                                <i class="fas fa-lock input-icon"></i>
+                                <input type="password" id="confirm_password" class="form-input input-with-icon"
+                                    placeholder="Re-enter password" required autocomplete="new-password" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password strength -->
+                    <div id="pwdStrength" style="margin-bottom:16px;display:none;">
+                        <div
+                            style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;">
+                            <span>Password strength</span><span id="pwdStrengthLabel">Weak</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar" id="pwdStrengthBar"
+                                style="width:25%;background:var(--grad-danger);"></div>
+                        </div>
+                    </div>
+
+                    <div id="regError" class="form-error hidden"><i class="fas fa-exclamation-circle"></i> <span
+                            id="regErrorMsg"></span></div>
+
+                    <button type="submit" id="registerBtn" class="btn btn-primary btn-full btn-lg"
+                        style="margin-top:8px;">
+                        <i class="fas fa-user-plus"></i> <span>Create Account</span>
+                    </button>
+                </form>
+
+                <p style="text-align:center;margin-top:20px;font-size:0.875rem;color:var(--text-secondary);">
+                    Already have an account? <a href="/login.html" class="auth-link">Sign in</a>
+                </p>
+                <p style="text-align:center;margin-top:10px;font-size:0.875rem;">
+                    <a href="/" class="auth-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/utils.js"></script>
+    <script src="/js/auth.js"></script>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import {
+            getAuth,
+            createUserWithEmailAndPassword,
+            updateProfile,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBTD_ZrX-SSd6eVNEWfaB98bHWSNKyRP-E",
+            authDomain: "fir-demo-90f79.firebaseapp.com",
+            projectId: "fir-demo-90f79",
+            storageBucket: "fir-demo-90f79.firebasestorage.app",
+            messagingSenderId: "388352631458",
+            appId: "1:388352631458:web:400a5769ade1fcf3f4edfb"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // ── If already logged in, redirect ──
+        onAuthStateChanged(auth, (firebaseUser) => {
+            if (firebaseUser && getToken()) {
+                const role = getUser()?.role;
+                window.location.href = role === 'student' ? '/student-dashboard.html' : '/admin-dashboard.html';
+            }
+        });
+
+        // ── Password strength indicator ──
+        document.getElementById('reg_password').addEventListener('input', function () {
+            const pwd = this.value;
+            const strengthEl = document.getElementById('pwdStrength');
+            const bar = document.getElementById('pwdStrengthBar');
+            const label = document.getElementById('pwdStrengthLabel');
+            if (!pwd) { strengthEl.style.display = 'none'; return; }
+            strengthEl.style.display = 'block';
+            let strength = 0;
+            if (pwd.length >= 6) strength++;
+            if (pwd.length >= 10) strength++;
+            if (/[A-Z]/.test(pwd)) strength++;
+            if (/[0-9]/.test(pwd)) strength++;
+            if (/[^A-Za-z0-9]/.test(pwd)) strength++;
+            const levels = ['Weak', 'Fair', 'Fair', 'Strong', 'Strong', 'Very Strong'];
+            const grads = ['var(--grad-danger)', 'var(--grad-warning)', 'var(--grad-warning)', 'var(--grad-success)', 'var(--grad-success)', 'var(--grad-success)'];
+            label.textContent = levels[strength];
+            bar.style.width = (20 * (strength + 1)) + '%';
+            bar.style.background = grads[strength];
+        });
+
+        // ── Register form submit ──
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('registerBtn');
+            const errDiv = document.getElementById('regError');
+            const errMsg = document.getElementById('regErrorMsg');
+            errDiv.classList.add('hidden');
+
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('reg_email').value.trim();
+            const password = document.getElementById('reg_password').value;
+            const confirm = document.getElementById('confirm_password').value;
+            const college_id = document.getElementById('college_id').value.trim();
+
+            if (password !== confirm) {
+                errMsg.textContent = 'Passwords do not match.';
+                errDiv.classList.remove('hidden');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating account...';
+
+            try {
+                // Step 1: Create Firebase account
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                // Set display name in Firebase
+                await updateProfile(userCredential.user, { displayName: name });
+
+                // Step 2: Register in the local backend (SQLite) to get JWT + role
+                const data = await apiPost('/api/auth/register', { name, email, password, college_id });
+                saveToken(data.token);
+                saveUser(data.user);
+
+                showToast('Account created! Welcome, ' + data.user.name, 'success');
+                setTimeout(() => window.location.href = '/student-dashboard.html', 1000);
+
+            } catch (err) {
+                // If Firebase succeeds but backend fails, still handle gracefully
+                let message = err.message || 'Registration failed. Please try again.';
+                if (err.code === 'auth/email-already-in-use') {
+                    message = 'This email is already registered. Please sign in instead.';
+                } else if (err.code === 'auth/weak-password') {
+                    message = 'Password is too weak. Use at least 6 characters.';
+                } else if (err.code === 'auth/invalid-email') {
+                    message = 'Invalid email address format.';
+                } else if (err.code === 'auth/network-request-failed') {
+                    message = 'Network error. Check your connection and try again.';
+                }
+                errMsg.textContent = message;
+                errDiv.classList.remove('hidden');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+            }
+        });
+    </script>
+</body>
+
+</html>

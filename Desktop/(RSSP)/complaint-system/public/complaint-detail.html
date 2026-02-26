@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Complaint Details – GrievEase</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+
+<body>
+    <nav class="nav">
+        <div class="nav-brand">
+            <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+            <div class="nav-brand-logo">🎓</div>
+            <span class="nav-brand-name">GrievEase</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <button onclick="history.back()" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i>
+                Back</button>
+            <button class="btn btn-secondary btn-sm" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+    </nav>
+
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="user-chip">
+                    <div class="user-avatar" id="sidebarAvatar">A</div>
+                    <div class="user-info">
+                        <div class="user-name" id="sidebarUserName">User</div>
+                        <div class="user-role" id="sidebarUserRole">role</div>
+                    </div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-title">Navigation</div>
+                <a href="/student-dashboard.html" class="sidebar-link" id="studentLink"><i
+                        class="fas fa-tachometer-alt"></i> My Dashboard</a>
+                <a href="/admin-dashboard.html" class="sidebar-link" id="adminLink" style="display:none;"><i
+                        class="fas fa-shield-alt"></i> Admin Dashboard</a>
+                <a href="/submit-complaint.html" class="sidebar-link" id="submitLink"><i class="fas fa-plus-circle"></i>
+                    New Complaint</a>
+            </nav>
+            <div class="sidebar-footer"><button class="btn btn-secondary btn-full btn-sm" onclick="logout()"><i
+                        class="fas fa-sign-out-alt"></i> Sign Out</button></div>
+        </aside>
+
+        <main class="main-content fade-in">
+            <div id="loadingState" style="padding:48px;text-align:center;color:var(--text-muted);">
+                <div class="ai-spinner" style="width:32px;height:32px;margin:0 auto 16px;border-width:3px;"></div>
+                <p>Loading complaint details...</p>
+            </div>
+            <div id="complaintContent" style="display:none;"></div>
+        </main>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+    <script src="/js/utils.js"></script>
+    <script>
+        let complaintData;
+        let currentUser;
+
+        async function init() {
+            currentUser = requireAuth();
+            if (!currentUser) return;
+            initSidebar();
+
+            // Show/hide sidebar links based on role
+            if (currentUser.role !== 'student') {
+                document.getElementById('adminLink').style.display = 'flex';
+                document.getElementById('studentLink').style.display = 'none';
+                document.getElementById('submitLink').style.display = 'none';
+            }
+
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) { window.location.href = '/student-dashboard.html'; return; }
+            await loadComplaint(id);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            const d = document.createElement('div'); d.textContent = str; return d.innerHTML;
+        }
+
+        async function loadComplaint(id) {
+            try {
+                complaintData = await apiGet(`/api/complaints/${id}`);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('complaintContent').style.display = 'block';
+                renderComplaint();
+            } catch (err) {
+                document.getElementById('loadingState').innerHTML = `<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Error</h3><p>${err.message}</p></div>`;
+            }
+        }
+
+        function renderComplaint() {
+            const c = complaintData;
+            const isStudent = currentUser.role === 'student';
+            const isAdmin = !isStudent;
+            const sentimentColors = { 'Very Negative': '#f87171', 'Negative': '#fbbf24', 'Neutral': '#9090b8', 'Positive': '#34d399', 'Very Positive': '#34d399' };
+            const priorityColors = { 'High': '#f87171', 'Medium': '#fbbf24', 'Low': '#34d399' };
+
+            document.getElementById('complaintContent').innerHTML = `
+        <div class="page-header flex-between" style="flex-wrap:wrap;gap:16px;">
+          <div>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+              ${statusBadge(c.status)}
+              ${priorityBadge(c.priority)}
+              <span class="badge badge-student"><i class="fas fa-tag"></i> ${c.category}</span>
+            </div>
+            <h1 class="page-title" style="font-size:1.5rem;">${escapeHtml(c.title)}</h1>
+            <p class="page-subtitle">
+              Submitted by <strong>${escapeHtml(c.student_name)}</strong> (${escapeHtml(c.college_id || '')}) 
+              · ${formatDate(c.created_at)} 
+              · <span style="color:var(--primary-light)">Complaint #${c.id}</span>
+            </p>
+          </div>
+          ${isAdmin ? `
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+              <select id="statusSelect" class="filter-select" onchange="updateStatus()">
+                <option ${c.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                <option ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                <option ${c.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+              </select>
+            </div>
+          ` : ''}
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:var(--space-xl);align-items:start;">
+          <div>
+            <!-- Description -->
+            <div class="card" style="margin-bottom:var(--space-md);">
+              <h3 style="margin-bottom:16px;font-size:1rem;"><i class="fas fa-file-text" style="color:var(--primary-light);margin-right:8px;"></i>Complaint Description</h3>
+              <p style="color:var(--text-primary);line-height:1.8;white-space:pre-wrap;">${escapeHtml(c.description)}</p>
+              ${c.image_path ? `<div style="margin-top:16px;"><p style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;"><i class="fas fa-image"></i> Attached Image</p><img src="${c.image_path}" alt="Complaint image" style="max-width:100%;max-height:300px;border-radius:var(--radius-md);border:1px solid var(--border);" /></div>` : ''}
+            </div>
+
+            <!-- Admin Response Area -->
+            ${isAdmin ? `
+            <div class="card" style="margin-bottom:var(--space-md);">
+              <h3 style="margin-bottom:16px;font-size:1rem;"><i class="fas fa-reply" style="color:var(--primary-light);margin-right:8px;"></i>Add Response</h3>
+              <textarea id="responseText" class="form-textarea" placeholder="Write your response or update to the student..." rows="4"></textarea>
+              <button class="btn btn-primary" style="margin-top:12px;" onclick="submitResponse()"><i class="fas fa-paper-plane"></i> Send Response</button>
+            </div>
+            ` : ''}
+
+            <!-- Response Timeline -->
+            <div class="card" style="margin-bottom:var(--space-md);">
+              <h3 style="margin-bottom:16px;font-size:1rem;"><i class="fas fa-comments" style="color:var(--primary-light);margin-right:8px;"></i>Responses (${c.responses?.length || 0})</h3>
+              ${c.responses && c.responses.length > 0 ? `
+                <div class="timeline">
+                  ${c.responses.map((r, i) => `
+                    <div class="timeline-item">
+                      <div class="timeline-indicator">
+                        <div class="timeline-dot"><i class="fas fa-user-shield" style="font-size:0.7rem;"></i></div>
+                        ${i < c.responses.length - 1 ? '<div class="timeline-line"></div>' : ''}
+                      </div>
+                      <div class="timeline-content">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">
+                          <strong style="font-size:0.875rem;">${escapeHtml(r.admin_name)}</strong>
+                          <span style="font-size:0.75rem;color:var(--text-muted);">${timeAgo(r.created_at)}</span>
+                        </div>
+                        <p style="font-size:0.875rem;color:var(--text-primary);line-height:1.6;">${escapeHtml(r.message)}</p>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              ` : `<div class="empty-state" style="padding:24px;"><div class="empty-state-icon" style="font-size:1.5rem;">💬</div><p>No responses yet. The team will respond soon.</p></div>`}
+            </div>
+
+            <!-- Feedback Section (student only, resolved complaints) -->
+            ${isStudent && c.status === 'Resolved' ? `
+              <div class="card">
+                <h3 style="margin-bottom:16px;font-size:1rem;"><i class="fas fa-star" style="color:var(--accent);margin-right:8px;"></i>${c.feedback ? 'Your Feedback' : 'Rate the Resolution'}</h3>
+                ${c.feedback ? `
+                  <div style="display:flex;gap:4px;margin-bottom:12px;">
+                    ${[1, 2, 3, 4, 5].map(i => `<i class="fas fa-star" style="font-size:1.5rem;color:${i <= c.feedback.rating ? '#f59e0b' : 'var(--text-muted)'};"></i>`).join('')}
+                    <span style="margin-left:8px;font-weight:600;">${c.feedback.rating}/5</span>
+                  </div>
+                  ${c.feedback.comment ? `<p style="color:var(--text-secondary);">"${escapeHtml(c.feedback.comment)}"</p>` : ''}
+                  <p style="font-size:0.8rem;color:var(--text-muted);margin-top:8px;">Submitted ${timeAgo(c.feedback.created_at)}</p>
+                ` : `
+                  <p style="font-size:0.875rem;color:var(--text-secondary);margin-bottom:16px;">Your complaint has been resolved. How satisfied are you with the resolution?</p>
+                  <div class="star-rating" id="starRating">
+                    ${[1, 2, 3, 4, 5].map(i => `<span class="star" data-val="${i}" onclick="setRating(${i})">⭐</span>`).join('')}
+                  </div>
+                  <input type="hidden" id="ratingVal" value="0" />
+                  <textarea id="feedbackComment" class="form-textarea" placeholder="Any additional comments? (optional)" rows="3" style="margin-top:12px;"></textarea>
+                  <button class="btn btn-success" style="margin-top:12px;" onclick="submitFeedback()"><i class="fas fa-star"></i> Submit Feedback</button>
+                `}
+              </div>
+            ` : ''}
+          </div>
+
+          <!-- AI Insights Sidebar -->
+          <div>
+            <div class="ai-panel" style="margin-bottom:16px;">
+              <div class="ai-panel-header">
+                <i class="fas fa-robot" style="color:var(--primary-light);"></i>
+                <span class="ai-panel-title">AI Analysis</span>
+                <span class="ai-badge">AI</span>
+              </div>
+              <div class="ai-insights" style="display:grid;">
+                <div class="ai-insight"><div class="ai-insight-label">Category</div><div class="ai-insight-value">${c.category}</div></div>
+                <div class="ai-insight"><div class="ai-insight-label">Priority</div><div class="ai-insight-value" style="color:${priorityColors[c.priority]}">${c.priority === 'High' ? '🔴' : c.priority === 'Medium' ? '🟡' : '🟢'} ${c.priority}</div></div>
+                <div class="ai-insight"><div class="ai-insight-label">Sentiment</div><div class="ai-insight-value" style="color:${sentimentColors[c.sentiment_label] || '#9090b8'}">${c.sentiment_label || 'Neutral'}</div></div>
+                <div class="ai-insight"><div class="ai-insight-label">Dept</div><div class="ai-insight-value" style="font-size:0.8rem;">${c.assigned_dept || 'N/A'}</div></div>
+              </div>
+              ${c.ai_confidence ? `
+                <div style="margin-top:12px;">
+                  <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-bottom:4px;"><span>Confidence</span><span>${Math.round(c.ai_confidence * 100)}%</span></div>
+                  <div class="progress-bar-wrapper"><div class="progress-bar" style="width:${Math.round(c.ai_confidence * 100)}%;"></div></div>
+                </div>
+              ` : ''}
+              ${c.ai_tags ? `<div style="margin-top:12px;"><div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">AI Tags</div><div style="display:flex;flex-wrap:wrap;gap:4px;">${c.ai_tags.split(',').filter(Boolean).map(t => `<span style="background:rgba(99,102,241,0.1);border:1px solid rgba(99,102,241,0.2);border-radius:4px;padding:2px 8px;font-size:0.7rem;color:var(--primary-light);">${t.trim()}</span>`).join('')}</div></div>` : ''}
+            </div>
+
+            <!-- Status Timeline -->
+            <div class="card">
+              <h4 style="margin-bottom:16px;font-size:0.875rem;"><i class="fas fa-history" style="color:var(--primary-light);margin-right:8px;"></i>Status History</h4>
+              <div style="display:flex;flex-direction:column;gap:8px;">
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.8125rem;">
+                  <div style="width:8px;height:8px;background:${c.status !== 'Pending' || true ? 'var(--success)' : 'var(--border)'};border-radius:50%;flex-shrink:0;"></div>
+                  <div><div style="font-weight:600;">Submitted</div><div style="color:var(--text-muted);font-size:0.75rem;">${formatDate(c.created_at)}</div></div>
+                </div>
+                ${c.status === 'In Progress' || c.status === 'Resolved' ? `
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.8125rem;">
+                  <div style="width:8px;height:8px;background:var(--info);border-radius:50%;flex-shrink:0;"></div>
+                  <div><div style="font-weight:600;">In Progress</div><div style="color:var(--text-muted);font-size:0.75rem;">Admin is reviewing</div></div>
+                </div>` : ''}
+                ${c.status === 'Resolved' ? `
+                <div style="display:flex;align-items:center;gap:10px;font-size:0.8125rem;">
+                  <div style="width:8px;height:8px;background:var(--success);border-radius:50%;flex-shrink:0;"></div>
+                  <div><div style="font-weight:600;">Resolved</div><div style="color:var(--text-muted);font-size:0.75rem;">${formatDate(c.updated_at)}</div></div>
+                </div>` : ''}
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+        }
+
+        let selectedRating = 0;
+        function setRating(val) {
+            selectedRating = val;
+            document.getElementById('ratingVal').value = val;
+            document.querySelectorAll('.star').forEach((s, i) => {
+                s.style.filter = i < val ? 'none' : 'grayscale(1)';
+                s.style.fontSize = i < val ? '2rem' : '1.75rem';
+            });
+        }
+
+        async function submitFeedback() {
+            if (selectedRating === 0) { showToast('Please select a rating first.', 'error'); return; }
+            try {
+                await apiPost(`/api/complaints/${complaintData.id}/feedback`, { rating: selectedRating, comment: document.getElementById('feedbackComment')?.value || '' });
+                showToast('Feedback submitted! Thank you 🎉', 'success');
+                setTimeout(() => location.reload(), 1200);
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        async function updateStatus() {
+            const status = document.getElementById('statusSelect').value;
+            try {
+                await apiPatch(`/api/complaints/${complaintData.id}/status`, { status });
+                showToast(`Status updated to "${status}"`, 'success');
+                await loadComplaint(complaintData.id);
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        async function submitResponse() {
+            const msg = document.getElementById('responseText')?.value?.trim();
+            if (!msg) { showToast('Response cannot be empty.', 'error'); return; }
+            try {
+                await apiPost(`/api/complaints/${complaintData.id}/respond`, { message: msg });
+                showToast('Response sent successfully', 'success');
+                await loadComplaint(complaintData.id);
+            } catch (err) { showToast(err.message, 'error'); }
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

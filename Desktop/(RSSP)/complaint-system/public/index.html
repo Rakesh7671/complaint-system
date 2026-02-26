@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GrievEase – College Complaint Management System</title>
+  <meta name="description" content="AI-powered smart complaint and grievance management system for college students. Submit, track, and resolve complaints efficiently." />
+  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .features-section { padding: var(--space-2xl) var(--space-xl); background: var(--bg-secondary); }
+    .section-header { text-align: center; margin-bottom: var(--space-2xl); }
+    .section-badge { display: inline-flex; align-items: center; gap: var(--space-sm); background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); border-radius: var(--radius-full); padding: 6px 16px; font-size: 0.8125rem; font-weight: 600; color: var(--primary-light); margin-bottom: var(--space-md); }
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: var(--space-lg); max-width: 1100px; margin: 0 auto; }
+    .feature-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); transition: var(--transition); }
+    .feature-card:hover { transform: translateY(-4px); border-color: var(--border-glow); box-shadow: var(--shadow-glow); }
+    .feature-icon { width: 48px; height: 48px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; margin-bottom: var(--space-md); }
+    .feature-card h3 { font-size: 1rem; margin-bottom: var(--space-sm); }
+    .feature-card p { font-size: 0.875rem; line-height: 1.7; }
+    .how-section { padding: var(--space-2xl) var(--space-xl); }
+    .steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg); max-width: 900px; margin: 0 auto; counter-reset: steps; }
+    .step-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center; position: relative; }
+    .step-num { width: 40px; height: 40px; background: var(--grad-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; color: white; margin: 0 auto var(--space-md); }
+    .step-card h3 { font-size: 0.9375rem; margin-bottom: var(--space-sm); }
+    .step-card p { font-size: 0.8125rem; }
+    .cta-section { padding: var(--space-2xl) var(--space-xl); text-align: center; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(139,92,246,0.05)); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .cta-section h2 { margin-bottom: var(--space-md); }
+    .cta-section p { margin-bottom: var(--space-xl); font-size: 1.05rem; }
+    footer { padding: var(--space-xl); text-align: center; color: var(--text-muted); font-size: 0.875rem; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="nav" id="mainNav">
+    <div class="nav-brand">
+      <div class="nav-brand-logo">🎓</div>
+      <span class="nav-brand-name">GrievEase</span>
+    </div>
+    <div class="nav-links">
+      <a href="#features" class="nav-link">Features</a>
+      <a href="#how" class="nav-link">How it Works</a>
+      <a href="/register.html" class="btn btn-secondary btn-sm">Register</a>
+      <a href="/login.html" class="btn btn-primary btn-sm"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content fade-in">
+      <div class="hero-badge"><i class="fas fa-robot"></i> AI-Powered Grievance System</div>
+      <h1>Your Voice, <span class="text-gradient">Heard & Resolved</span></h1>
+      <p>An intelligent, transparent platform for students to raise complaints and track resolutions — powered by AI that automatically classifies, prioritizes, and routes every issue.</p>
+      <div class="hero-actions">
+        <a href="/register.html" class="btn btn-primary btn-lg"><i class="fas fa-user-plus"></i> Get Started Free</a>
+        <a href="/login.html" class="btn btn-secondary btn-lg"><i class="fas fa-sign-in-alt"></i> Sign In</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-value text-gradient">7</div>
+          <div class="hero-stat-label">Departments Covered</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value text-gradient">AI</div>
+          <div class="hero-stat-label">Auto Classification</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value text-gradient">24h</div>
+          <div class="hero-stat-label">Avg Resolution Time</div>
+        </div>
+      </div>
+    </div>
+    <!-- Floating Demo Card -->
+    <div class="floating-card float-anim">
+      <div class="card card-glass">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div style="width:10px;height:10px;background:#10b981;border-radius:50%;"></div>
+          <span style="font-size:0.75rem;color:var(--text-muted);">AI Analysis Live</span>
+        </div>
+        <p style="font-size:0.875rem;font-weight:600;margin-bottom:12px;color:var(--text-primary);">🤖 Complaint Auto-Classified</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--bg-card);border-radius:8px;padding:10px;">
+            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Category</div>
+            <div style="font-size:0.9rem;font-weight:700;color:#a5b4fc;margin-top:3px;">Hostel</div>
+          </div>
+          <div style="background:var(--bg-card);border-radius:8px;padding:10px;">
+            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Priority</div>
+            <div style="font-size:0.9rem;font-weight:700;color:#f87171;margin-top:3px;">High 🔴</div>
+          </div>
+          <div style="background:var(--bg-card);border-radius:8px;padding:10px;">
+            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Sentiment</div>
+            <div style="font-size:0.9rem;font-weight:700;color:#fbbf24;margin-top:3px;">😞 Negative</div>
+          </div>
+          <div style="background:var(--bg-card);border-radius:8px;padding:10px;">
+            <div style="font-size:0.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Dept</div>
+            <div style="font-size:0.8rem;font-weight:700;color:#67e8f9;margin-top:3px;">Hostel Mgmt</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:rgba(16,185,129,0.1);border-radius:8px;padding:10px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-check-circle" style="color:#34d399;"></i>
+          <span style="font-size:0.8rem;color:#34d399;font-weight:600;">Auto-assigned to Hostel Management</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="features-section" id="features">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-star"></i> Features</div>
+      <h2>Everything You Need for Effective Grievance Resolution</h2>
+      <p style="max-width:600px;margin:var(--space-md) auto 0;">A complete, AI-powered ecosystem designed to make complaint management transparent, fast, and effective.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(99,102,241,0.15);color:#a5b4fc;"><i class="fas fa-brain"></i></div>
+        <h3>AI Auto-Classification</h3>
+        <p>Our NLP engine instantly detects the category, priority, and sentiment of every complaint — no manual sorting required.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(6,182,212,0.15);color:#67e8f9;"><i class="fas fa-route"></i></div>
+        <h3>Smart Routing</h3>
+        <p>Complaints are automatically routed to the correct department based on AI analysis, ensuring no complaint gets lost.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(245,158,11,0.15);color:#fbbf24;"><i class="fas fa-bell"></i></div>
+        <h3>Real-time Notifications</h3>
+        <p>Students receive instant notifications when their complaint status changes or an admin responds.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(16,185,129,0.15);color:#34d399;"><i class="fas fa-chart-pie"></i></div>
+        <h3>Analytics Dashboard</h3>
+        <p>Admins get rich insights — category trends, resolution rates, department performance, and sentiment analysis charts.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(239,68,68,0.15);color:#f87171;"><i class="fas fa-shield-alt"></i></div>
+        <h3>Role-Based Access</h3>
+        <p>Secure JWT authentication with three roles — Student, Department Admin, and Super Admin — each with appropriate access.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon" style="background:rgba(139,92,246,0.15);color:#c4b5fd;"><i class="fas fa-star"></i></div>
+        <h3>Feedback & Rating</h3>
+        <p>Students can rate and review the resolution quality after a complaint is resolved, helping improve department performance.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it Works -->
+  <section class="how-section" id="how">
+    <div class="section-header">
+      <div class="section-badge"><i class="fas fa-list-ol"></i> Process</div>
+      <h2>How It Works</h2>
+    </div>
+    <div class="steps-grid">
+      <div class="step-card"><div class="step-num">1</div><h3>Register & Login</h3><p>Create your student account securely using your college email and ID.</p></div>
+      <div class="step-card"><div class="step-num">2</div><h3>Submit Complaint</h3><p>Describe your issue — AI instantly analyzes and classifies it in real-time.</p></div>
+      <div class="step-card"><div class="step-num">3</div><h3>Auto-Routed</h3><p>The complaint is automatically sent to the correct department with priority.</p></div>
+      <div class="step-card"><div class="step-num">4</div><h3>Track & Resolve</h3><p>Monitor status updates, receive notifications, and provide feedback on resolution.</p></div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>Ready to Make <span class="text-gradient">Your Voice Heard?</span></h2>
+    <p>Join thousands of students who use GrievEase to resolve their complaints faster.</p>
+    <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;">
+      <a href="/register.html" class="btn btn-primary btn-lg"><i class="fas fa-user-plus"></i> Register Now</a>
+      <a href="/login.html" class="btn btn-secondary btn-lg"><i class="fas fa-sign-in-alt"></i> Login</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2024 GrievEase — AI-Powered College Complaint Management System. Built with transparency and efficiency in mind.</p>
+  </footer>
+</body>
+</html>

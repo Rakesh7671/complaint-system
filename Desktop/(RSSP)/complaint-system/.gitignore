@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Environment variables (KEEP THIS SECRET!)
+.env
+
+# Database file
+*.db
+*.sqlite
+*.sqlite3
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# Firebase local
+.firebase/
+firebase-debug.log
